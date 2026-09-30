@@ -1,0 +1,2845 @@
+/* The Metrics Kitchen: a 1970s test kitchen. Cream recipe cards, tomato enamel, mustard tile, avocado and chocolate. */
+
+:root {
+  --cream: #f4ead3;
+  --cream-2: #eadcbf;
+  --paper: #fbf5e6;
+  --ink: #3a2418;
+  --ink-soft: #6b4f3e;
+  --tomato: #d9442b;
+  --tomato-deep: #a9311b;
+  --mustard: #e6a23c;
+  --mustard-deep: #c7811f;
+  --avocado: #6f7e2e;
+  --avocado-deep: #4f5b1d;
+  --teal: #2e6f6b;
+  --brown: #7a4a2a;
+  --enamel: #fff6e3;
+  --face-display: 'Shrikhand', 'Cooper Black', serif;
+  --face-ui: 'Bricolage Grotesque', 'Trebuchet MS', sans-serif;
+  --face-mono: 'Martian Mono', ui-monospace, monospace;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --snap: cubic-bezier(0.16, 1, 0.3, 1);
+  --gutter: clamp(1rem, 4vw, 3.5rem);
+  --card-img: clamp(56px, min(5.2vw, 9svh), 132px);
+  color-scheme: light;
+}
+
+/* computed once on the station (against the stove), then inherited as plain lengths */
+@property --station-w {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --pot-w {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --label-h {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--cream);
+  color: var(--ink);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--face-ui);
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  /* paper grain */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.23 0 0 0 0 0.14 0 0 0 0 0.09 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 3px;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  user-select: none;
+}
+
+a {
+  color: var(--tomato-deep);
+}
+
+.sound-toggle {
+  position: absolute;
+  z-index: 60;
+  top: clamp(0.6rem, 1.4svh, 1.1rem);
+  right: clamp(1rem, 1.8vw, 2.4rem);
+  padding: 0.45rem 0.8rem;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: 3px 3px 0 var(--ink);
+  cursor: pointer;
+}
+
+.sound-toggle[aria-pressed='false'] {
+  opacity: 0.7;
+}
+
+/* buttons: all press down a little */
+.btn,
+.chip,
+.index-card,
+.card,
+.zone-label,
+.sound-toggle {
+  transition:
+    transform 160ms var(--ease-out),
+    box-shadow 160ms var(--ease-out),
+    background-color 200ms ease;
+}
+
+.btn:active,
+.chip:active,
+.index-card:active,
+.zone-label:active,
+.sound-toggle:active {
+  transform: translate(2px, 2px) scale(0.98);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+.btn {
+  padding: 0.75rem 1.2rem;
+  border: 2.5px solid var(--ink);
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 1rem;
+  box-shadow: 4px 4px 0 var(--ink);
+  cursor: pointer;
+}
+
+.btn-tomato {
+  background: var(--tomato);
+  color: var(--paper);
+}
+
+.btn-ghost {
+  background: var(--paper);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.chip {
+  padding: 0.4rem 0.8rem;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  font-weight: 600;
+  font-size: 0.85rem;
+  box-shadow: 3px 3px 0 var(--ink);
+  cursor: pointer;
+}
+
+.chip:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ======================================================= the recipe book */
+
+.book {
+  padding-bottom: 5rem;
+}
+
+.book-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(4rem, 12vh, 8rem) var(--gutter) clamp(3rem, 8vh, 5rem);
+  text-align: center;
+  border-bottom: 3px solid var(--ink);
+  background: var(--mustard);
+}
+
+/* a slow-turning 70s sunburst */
+.sunburst {
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  width: 200vmax;
+  height: 200vmax;
+  margin: -100vmax 0 0 -100vmax;
+  background: repeating-conic-gradient(from 0deg, #eaa944 0 7.5deg, #e39a33 7.5deg 15deg);
+  animation: turn 120s linear infinite;
+}
+
+@keyframes turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.drift img {
+  position: absolute;
+  width: clamp(56px, 7vw, 110px);
+  filter: drop-shadow(3px 5px 0 rgb(58 36 24 / 0.25));
+  animation: drift 7s ease-in-out calc(var(--i) * -0.9s) infinite alternate;
+}
+
+.drift img:nth-child(1) { left: 6%; top: 18%; }
+.drift img:nth-child(2) { left: 14%; top: 66%; }
+.drift img:nth-child(3) { right: 8%; top: 16%; }
+.drift img:nth-child(4) { right: 15%; top: 64%; }
+.drift img:nth-child(5) { left: 28%; top: 8%; }
+.drift img:nth-child(6) { right: 27%; top: 6%; }
+.drift img:nth-child(7) { left: 2%; top: 44%; }
+.drift img:nth-child(8) { right: 2%; top: 42%; }
+
+@keyframes drift {
+  from {
+    transform: translateY(-10px) rotate(-8deg);
+  }
+  to {
+    transform: translateY(12px) rotate(8deg);
+  }
+}
+
+.book-kicker,
+.book-title,
+.book-lead,
+.book-progress {
+  position: relative;
+}
+
+.book-kicker {
+  margin: 0;
+  font-family: var(--face-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.book-title {
+  margin: 0.4rem 0 0;
+  font-family: var(--face-display);
+  font-weight: 400;
+  font-size: clamp(3.2rem, 10vw, 8.5rem);
+  line-height: 0.95;
+  color: var(--tomato);
+  text-shadow:
+    3px 3px 0 var(--paper),
+    7px 7px 0 var(--ink);
+}
+
+.book-title span {
+  display: inline-block;
+  margin: 0 0.12em;
+}
+
+.book-lead {
+  max-width: 44ch;
+  margin: 1.4rem auto 0;
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  font-weight: 600;
+}
+
+.book-progress {
+  display: inline-block;
+  margin: 1.2rem 0 0;
+  padding: 0.35rem 0.9rem;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  font-family: var(--face-mono);
+  font-size: 0.8rem;
+}
+
+.howto {
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 3rem var(--gutter) 0;
+}
+
+.howto h2,
+.book-kitchen-head h2 {
+  margin: 0;
+  font-family: var(--face-display);
+  font-weight: 400;
+  font-size: clamp(1.8rem, 3.6vw, 2.8rem);
+  line-height: 1;
+}
+
+.howto ol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.4rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.howto li {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  grid-template-rows: auto 1fr;
+  column-gap: 0.9rem;
+  padding: 1rem 1.1rem;
+  border: 2.5px solid var(--ink);
+  border-radius: 14px;
+  background: var(--paper);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.howto img {
+  grid-row: 1 / -1;
+  width: 64px;
+  align-self: center;
+}
+
+.howto b {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.howto span {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+
+.book-kitchen {
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 3.5rem var(--gutter) 0;
+}
+
+.book-kitchen-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.8rem;
+  border-bottom: 3px dashed var(--ink);
+}
+
+.kitchen-meta .book-kitchen-head h2 {
+  color: var(--tomato);
+}
+
+.kitchen-google .book-kitchen-head h2 {
+  color: var(--avocado);
+}
+
+/* ---------- the chef's challenges ---------- */
+
+.kitchen-challenges .book-kitchen-head h2 {
+  color: var(--teal);
+}
+
+.challenges-lead {
+  max-width: 70ch;
+  margin: 1rem 0 0;
+  color: var(--ink-soft);
+}
+
+.challenge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 1.3rem;
+  margin: 1.4rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.challenge-card {
+  min-height: 210px;
+}
+
+.challenge-card .index-abbr {
+  color: var(--teal);
+}
+
+.challenge-question {
+  margin-top: 0.35rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* the ingredients the problem gives you, in a row */
+.challenge-jars {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.challenge-jars img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+
+.book-kitchen-head p {
+  margin: 0;
+  font-family: var(--face-mono);
+  font-size: 0.8rem;
+}
+
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.2rem;
+  margin: 1.4rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* an index card: red header line, blue rules */
+.index-card {
+  position: relative;
+  width: 100%;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 1.1rem 1rem 0.8rem;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background:
+    linear-gradient(var(--tomato), var(--tomato)) 0 2.6rem / 100% 2px no-repeat,
+    repeating-linear-gradient(transparent 0 1.35rem, rgb(46 111 107 / 0.18) 1.35rem calc(1.35rem + 1px)) 0 2.8rem / 100% calc(100% - 2.8rem) no-repeat,
+    var(--paper);
+  box-shadow: 4px 4px 0 var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .index-card:hover {
+    transform: translate(-2px, -3px) rotate(-1deg);
+    box-shadow: 7px 8px 0 var(--ink);
+  }
+}
+
+.ribbon {
+  position: absolute;
+  top: -10px;
+  right: -8px;
+  padding: 0.2rem 0.55rem;
+  border: 2px solid var(--ink);
+  background: var(--tomato);
+  color: var(--paper);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transform: rotate(6deg);
+  animation: ribbon 2.4s ease-in-out infinite;
+}
+
+@keyframes ribbon {
+  50% {
+    transform: rotate(-2deg) translateY(-2px);
+  }
+}
+
+.index-abbr {
+  font-family: var(--face-display);
+  font-size: 1.55rem;
+  line-height: 1.05;
+}
+
+.kitchen-meta .index-abbr {
+  color: var(--tomato);
+}
+
+.kitchen-google .index-abbr {
+  color: var(--avocado);
+}
+
+.index-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink-soft);
+}
+
+.index-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 0.6rem;
+}
+
+.chilis {
+  display: flex;
+  gap: 3px;
+}
+
+.chilis i {
+  width: 16px;
+  height: 7px;
+  border-radius: 8px 2px 8px 2px;
+  background: var(--cream-2);
+  transform: rotate(-20deg);
+}
+
+.chilis i[data-on='true'] {
+  background: var(--tomato);
+}
+
+.index-stars b,
+.kitchen-stars span,
+.recipe-stars span {
+  color: var(--cream-2);
+  -webkit-text-stroke: 1px var(--ink-soft);
+}
+
+.index-stars b[data-on='true'],
+.kitchen-stars span[data-on='true'],
+.recipe-stars span[data-on='true'] {
+  color: var(--mustard);
+  -webkit-text-stroke: 1px var(--ink);
+}
+
+.book-foot {
+  max-width: 1680px;
+  margin: 4rem auto 0;
+  padding: 1.5rem var(--gutter) 0;
+  border-top: 3px dashed var(--ink);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+/* ======================================================= the kitchen */
+
+.kitchen {
+  min-height: 100svh;
+  padding: 1rem var(--gutter) 5rem;
+}
+
+.kitchen-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-right: 7.5rem;
+}
+
+.kitchen-where {
+  margin: 0;
+  font-family: var(--face-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.kitchen-stars {
+  margin: 0;
+  font-size: clamp(1.4rem, 1.5vw, 1.9rem);
+  letter-spacing: 0.1em;
+}
+
+.kitchen-grid {
+  display: grid;
+  grid-template-columns: minmax(250px, 320px) minmax(0, 1fr);
+  grid-template-areas:
+    'ticket stove'
+    'pantry pantry';
+  gap: 1.4rem;
+  margin-top: 1rem;
+}
+
+/* ---------- the order ticket ---------- */
+
+.ticket {
+  grid-area: ticket;
+  position: relative;
+  align-self: start;
+  padding: 2em 1.5em 1.8em;
+  background:
+    radial-gradient(circle at 10px -4px, transparent 9px, var(--enamel) 10px) 0 100% / 20px 14px repeat-x,
+    var(--enamel);
+  border: 2px solid var(--ink);
+  border-bottom: 0;
+  font-family: var(--face-mono);
+  font-size: clamp(0.78rem, 0.3rem + 0.5vw, 1.05rem);
+  box-shadow: 5px 6px 0 rgb(58 36 24 / 0.35);
+  transform: rotate(-1.2deg);
+  animation: ticket-in 700ms var(--snap) both;
+}
+
+@keyframes ticket-in {
+  from {
+    transform: translateY(-60px) rotate(-6deg);
+    opacity: 0;
+  }
+}
+
+.ticket-clip {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  width: 70px;
+  height: 22px;
+  margin-left: -35px;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  background: linear-gradient(#c9c2b3, #9d9585);
+}
+
+.ticket-meta {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.87em;
+}
+
+.ticket-abbr {
+  margin: 0.8rem 0 0;
+  font-family: var(--face-display);
+  font-weight: 400;
+  font-size: 3.6em;
+  line-height: 1;
+  color: var(--tomato);
+}
+
+.ticket-name {
+  margin: 0.3rem 0 0;
+  font-family: var(--face-ui);
+  font-weight: 700;
+  font-size: 1.28em;
+  line-height: 1.3;
+}
+
+/* a challenge ticket: the word problem instead of a metric */
+.ticket[data-kind='challenge'] .ticket-abbr {
+  font-size: 2.5em;
+  color: var(--teal);
+}
+
+.ticket-question {
+  margin: 0.6rem 0 0;
+  font-family: var(--face-ui);
+  font-weight: 600;
+  font-size: 1.22em;
+  line-height: 1.4;
+}
+
+.ticket-rule {
+  margin: 1rem 0;
+  border-top: 2px dashed var(--ink-soft);
+}
+
+.ticket-lines {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.ticket-lines dt {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.85em;
+  color: var(--ink-soft);
+}
+
+.ticket-lines dd {
+  margin: 0.2rem 0 0;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.ticket-item b {
+  font-weight: 600;
+}
+
+.ticket-empty {
+  color: #b9a88f;
+}
+
+.ticket-total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem;
+  min-height: 3.4em;
+  margin: 0;
+  font-size: 1.28em;
+}
+
+.ticket-total b {
+  font-family: var(--face-display);
+  font-weight: 400;
+  font-size: 2.4em;
+  color: var(--avocado-deep);
+}
+
+/* stamped beside the total, where it never covers what is in the pot */
+.stamp {
+  align-self: center;
+  margin-left: auto;
+  padding: 0.25rem 0.7rem;
+  border: 4px solid currentColor;
+  border-radius: 8px;
+  font-family: var(--face-ui);
+  font-weight: 800;
+  font-size: 1.3em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.stamp-spoiled {
+  color: var(--tomato);
+}
+
+.stamp-cooked {
+  color: var(--avocado);
+}
+
+/* ---------- the stove ---------- */
+
+.stove {
+  grid-area: stove;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 340px;
+  padding: 1.4rem 1.2rem 1rem;
+  border: 3px solid var(--ink);
+  border-radius: 18px;
+  /* mustard tile backsplash with grout lines; the counter is drawn by the station */
+  background: conic-gradient(#f0cf8a 90deg, #e9bf6d 0 180deg, #f0cf8a 0 270deg, #e9bf6d 0) 0 0 / 56px 56px;
+  box-shadow: 6px 7px 0 var(--ink);
+  overflow: hidden;
+  container-type: inline-size;
+}
+
+.stove::after {
+  content: '';
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  border-radius: 15px;
+  box-shadow: inset 0 0 0 6px rgb(255 246 227 / 0.35);
+  pointer-events: none;
+}
+
+.station {
+  /* label sizes live here so the counter line can be worked out from them */
+  --name-size: 1.15rem;
+  --hint-size: 0.62rem;
+  --label-pad-y: 0.32rem;
+  --label-h: calc(var(--name-size) + var(--hint-size) * 1.5 + var(--label-pad-y) * 2 + 4px);
+  /* as wide as the stove (100cqw is its inner width); on a full-screen desktop, also no taller than it allows */
+  --station-w: 100cqw;
+  /* the pot column: 1.6 of 3.6 shares, less two gaps */
+  --pot-w: calc((var(--station-w) - 1.2rem) * 1.6 / 3.6);
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1fr);
+  align-items: end;
+  align-self: center;
+  width: var(--station-w);
+  gap: 0.6rem;
+}
+
+.stove-order {
+  display: none;
+  position: absolute;
+  z-index: 4;
+  top: 0.45rem;
+  right: 0.6rem;
+  margin: 0;
+  padding: 0.1rem 0.5rem;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: var(--enamel);
+  font-family: var(--face-display);
+  font-size: 0.9rem;
+  color: var(--tomato);
+  rotate: -3deg;
+}
+
+/* the counter top runs just under the pot's belly, however tall the stove is:
+   label, gap, then 58/420 of the pot's width. It runs out to both walls of the stove. */
+.station::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: -100vw;
+  right: -100vw;
+  top: calc(100% - var(--label-h) - 0.4rem - var(--pot-w) * 0.138);
+  bottom: -40rem;
+  background: linear-gradient(#4a2e1f, #3b2418 9rem);
+}
+
+.zone {
+  position: relative;
+  display: grid;
+  /* the column is the zone's share of the station; a wide label must not stretch the art */
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: 0.4rem;
+}
+
+/* the bin and the pour pass in front of the seasoning bowl */
+.zone-pot {
+  z-index: 2;
+  --item: 0.15;
+}
+
+.zone-strainer,
+.zone-spices {
+  --item: 0.19;
+}
+
+.zone-target {
+  position: relative;
+  width: 100%;
+  container-type: inline-size;
+  transition: transform 260ms var(--ease-out), filter 260ms var(--ease-out);
+}
+
+.zone-strainer .zone-target {
+  transform: rotate(-8deg);
+  margin-bottom: 3.4rem;
+}
+
+.zone-spices .zone-target {
+  margin-bottom: 1.6rem;
+}
+
+/* dragged over: the zone reaches for the food */
+.zone[data-hover='true'] .zone-target {
+  transform: scale(1.06) translateY(-4px);
+  filter: drop-shadow(0 0 12px rgb(255 246 227 / 0.95));
+}
+
+.zone-strainer[data-hover='true'] .zone-target {
+  transform: rotate(-2deg) scale(1.08);
+}
+
+.zone-label {
+  display: grid;
+  justify-items: center;
+  max-width: 100%;
+  padding: var(--label-pad-y) 0.8rem;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--paper);
+  box-shadow: 3px 3px 0 var(--ink);
+  white-space: nowrap;
+  cursor: default;
+}
+
+.zone-label:disabled {
+  opacity: 1;
+}
+
+/* spoiled: the labels duck under the counter while the chef talks */
+.zone-label {
+  transition:
+    transform 160ms var(--ease-out),
+    box-shadow 160ms var(--ease-out),
+    background-color 200ms ease,
+    opacity 200ms var(--ease-out),
+    translate 260ms var(--ease-out);
+}
+
+.station[data-mood='spoiled'] .zone-label {
+  opacity: 0;
+  translate: 0 10px;
+}
+
+.zone[data-hint='true'] .zone-label {
+  outline: 3px dashed var(--mustard);
+  outline-offset: 3px;
+}
+
+.zone[data-armed='true'] .zone-label {
+  cursor: pointer;
+  background: var(--mustard);
+  animation: beckon 900ms ease-in-out infinite;
+}
+
+@keyframes beckon {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.zone-name {
+  font-family: var(--face-display);
+  font-size: var(--name-size);
+  line-height: 1;
+}
+
+.hint-short {
+  display: none;
+}
+
+.zone-hint {
+  font-family: var(--face-mono);
+  font-size: var(--hint-size);
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.pot-art,
+.strainer-art,
+.bowl-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* three layers share the pot's box: the burner behind, the pot (which moves), the near flames and effects in front */
+.burner-art,
+.pot-fx {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.pot-shaker {
+  position: relative;
+  /* the dump tips the pot about its right-hand lip */
+  transform-origin: 83.3% 34.7%;
+}
+
+.pot-bounce {
+  transform-origin: 50% 88%;
+}
+
+.strainer-art {
+  transform-origin: 58% 40%;
+}
+
+.bowl-art {
+  transform-origin: 50% 92%;
+}
+
+/* ---------- the pot ---------- */
+
+.pot-body {
+  fill: var(--tomato);
+  stroke: var(--ink);
+  stroke-width: 4;
+}
+
+.pot-dot {
+  fill: var(--enamel);
+  opacity: 0.85;
+}
+
+.pot-shade {
+  fill: rgb(58 36 24 / 0.16);
+}
+
+.pot-handle {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 12;
+  stroke-linecap: round;
+}
+
+.pot-rim {
+  fill: var(--enamel);
+  stroke: var(--ink);
+  stroke-width: 4;
+}
+
+.pot-inside {
+  fill: #2a1a12;
+}
+
+.soup {
+  fill: var(--soup);
+  transition: fill 900ms ease;
+}
+
+.surface {
+  transform-origin: 210px 126px;
+}
+
+.soup-glow {
+  animation: glow 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.bubble {
+  fill: rgb(255 255 255 / 0.55);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: bubble 1.8s ease-in-out calc(var(--i) * -0.37s) infinite;
+}
+
+.zone-pot[data-hover='true'] .bubble {
+  animation-duration: 0.7s;
+}
+
+.station[data-mood='spoiled'] .bubble {
+  fill: #9aab3a;
+  stroke: #56601c;
+  stroke-width: 1.5;
+  animation-duration: 3.2s;
+}
+
+@keyframes bubble {
+  0%,
+  100% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  60% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+
+.steam path {
+  fill: none;
+  stroke: rgb(255 250 240 / 0.8);
+  stroke-width: 5;
+  stroke-linecap: round;
+  opacity: 0;
+  animation: steam 3.2s ease-out calc(var(--i) * 1.05s) infinite;
+}
+
+.station[data-mood='cooked'] .steam path {
+  stroke-width: 8;
+  animation-duration: 2s;
+}
+
+.station[data-mood='spoiled'] .steam {
+  display: none;
+}
+
+@keyframes steam {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scaleY(0.7);
+  }
+  30% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-26px) scaleY(1.1);
+  }
+}
+
+/* ---------- the burner: a cast-iron ring, blue gas going amber at the tips ---------- */
+
+.burner-ring {
+  fill: #2a1a12;
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+
+.burner-cap {
+  fill: #4d3c31;
+  stroke: #1d1712;
+  stroke-width: 2;
+}
+
+.burner-shine {
+  fill: rgb(255 246 227 / 0.28);
+}
+
+.grate {
+  fill: #2a1a12;
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.burner-glow {
+  transform-origin: 210px 324px;
+  animation: heat-glow 1.9s ease-in-out infinite alternate;
+}
+
+/* warm light thrown up onto the bottom of the pot */
+.pan-glow {
+  mix-blend-mode: screen;
+  transform-origin: 210px 292px;
+  animation: heat-glow 1.3s ease-in-out infinite alternate;
+}
+
+@keyframes heat-glow {
+  from {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 0.95;
+    transform: scale(1.05);
+  }
+}
+
+/* the fire grows as the pot fills (--heat counts what has gone in) */
+.flames {
+  transform-origin: 210px 330px;
+  transform: scale(calc(1 + var(--heat) * 0.03), calc(1 + var(--heat) * 0.1));
+  transition: transform 600ms var(--snap);
+}
+
+.flare {
+  transform-origin: 210px 330px;
+}
+
+.flame {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: flicker calc(0.24s + var(--i) * 0.021s) ease-in-out calc(var(--i) * -0.11s) infinite alternate;
+}
+
+.flame-outer {
+  fill: url(#flame-cool);
+  stroke: rgb(29 23 18 / 0.55);
+  stroke-width: 1.2;
+}
+
+.flame-core {
+  fill: url(#flame-core);
+}
+
+.flames-back .flame {
+  opacity: 0.85;
+}
+
+@keyframes flicker {
+  0% {
+    transform: scale(0.94, 0.84) skewX(-4deg);
+  }
+  50% {
+    transform: scale(1.05, 1.08) skewX(2deg);
+  }
+  100% {
+    transform: scale(0.97, 1.2) skewX(5deg);
+  }
+}
+
+/* a food hovering over the pot: the fire leans up to meet it */
+.zone-pot[data-hover='true'] .flames {
+  transform: scale(1.1, 1.5);
+}
+
+/* cooked: roaring and golden */
+.station[data-mood='cooked'] .flames {
+  transform: scale(1.2, 1.8);
+}
+
+.station[data-mood='cooked'] .flame-outer {
+  fill: url(#flame-hot);
+}
+
+.station[data-mood='cooked'] .flame {
+  animation-duration: 0.16s;
+}
+
+/* spoiled: the gas coughs and sputters */
+.station[data-mood='spoiled'] .flames {
+  transform: scale(0.85, 0.6);
+}
+
+.station[data-mood='spoiled'] .flame-outer {
+  fill: url(#flame-sick);
+}
+
+.station[data-mood='spoiled'] .flame {
+  animation: sputter 1.1s steps(1, end) calc(var(--i) * -0.23s) infinite;
+}
+
+@keyframes sputter {
+  0% {
+    transform: scaleY(1);
+  }
+  18% {
+    transform: scaleY(0.4);
+  }
+  30% {
+    transform: scaleY(1.15);
+  }
+  46% {
+    transform: scaleY(0.2);
+  }
+  60% {
+    transform: scaleY(0.9);
+  }
+  80% {
+    transform: scaleY(0.6);
+  }
+}
+
+.spark {
+  fill: #ffd46a;
+  stroke: #ff7a2b;
+  stroke-width: 0.8;
+  opacity: 0;
+  animation: spark 1.7s ease-out calc(var(--i) * 0.37s) infinite;
+}
+
+@keyframes spark {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), -62px);
+  }
+}
+
+.station[data-mood='cooked'] .spark {
+  animation-duration: 0.9s;
+}
+
+.station[data-mood='spoiled'] .sparks {
+  display: none;
+}
+
+/* ---------- a landing: rings, a jet, a crown of drops, drips down the enamel, a puff of steam ---------- */
+
+.splash[data-on='false'] {
+  display: none;
+}
+
+.ripple {
+  fill: none;
+  stroke: rgb(255 250 240 / 0.9);
+  stroke-width: 4;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ripple 760ms var(--ease-out) forwards;
+}
+
+.ripple-2 {
+  animation-delay: 110ms;
+  opacity: 0;
+}
+
+.ripple-3 {
+  animation-delay: 230ms;
+  opacity: 0;
+}
+
+@keyframes ripple {
+  from {
+    transform: scale(0.4);
+    opacity: 1;
+  }
+  to {
+    transform: scale(3.6);
+    opacity: 0;
+  }
+}
+
+.jet {
+  fill: var(--soup);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: jet 560ms var(--ease-out) 60ms both;
+}
+
+@keyframes jet {
+  0% {
+    transform: scaleY(0);
+  }
+  35% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(0);
+  }
+}
+
+.jet-drop {
+  fill: var(--drop);
+  stroke: var(--ink);
+  stroke-width: 1;
+  opacity: 0;
+  animation: jet-drop 760ms linear 100ms both;
+}
+
+@keyframes jet-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-20px);
+  }
+  45% {
+    transform: translateY(-28px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(46px);
+  }
+}
+
+/* each drop flies a parabola: across by --dx, up by --h, and lands --fall below where it started */
+.crown,
+.speck,
+.bin-drop {
+  stroke: var(--ink);
+  stroke-width: 1;
+  opacity: 0;
+  animation: arc 720ms linear calc(var(--i) * 12ms) both;
+}
+
+.crown[data-tone='soup'] {
+  fill: var(--soup);
+}
+
+.crown[data-tone='food'],
+.speck {
+  fill: var(--drop);
+}
+
+@keyframes arc {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(0.5);
+  }
+  25% {
+    transform: translate(calc(var(--dx) * 0.25), calc(var(--h) * -0.75 + var(--fall) * 0.0625)) scale(1);
+  }
+  50% {
+    transform: translate(calc(var(--dx) * 0.5), calc(var(--h) * -1 + var(--fall) * 0.25));
+  }
+  75% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.75), calc(var(--h) * -0.75 + var(--fall) * 0.5625));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--fall)) scale(0.7);
+  }
+}
+
+.spill {
+  fill: var(--soup);
+  stroke: var(--ink);
+  stroke-width: 1;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: spill 1.5s ease-in calc(420ms + var(--i) * 140ms) both;
+}
+
+@keyframes spill {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scaleY(0.6);
+  }
+  12% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(52px) scaleY(1.4);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(74px) scaleY(0.8);
+  }
+}
+
+.puff {
+  fill: rgb(255 250 240 / 0.85);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: puff 900ms var(--ease-out) calc(160ms + var(--i) * 70ms) both;
+}
+
+@keyframes puff {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.3);
+  }
+  30% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-50px) scale(1.6);
+  }
+}
+
+/* the colander sheds a shower through its holes; the bowl throws up a pinch */
+.drip-burst circle {
+  fill: var(--drop);
+  stroke: var(--ink);
+  stroke-width: 1;
+  opacity: 0;
+  animation: drip-burst 720ms ease-in calc(var(--i) * 55ms) both;
+}
+
+@keyframes drip-burst {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(54px);
+  }
+}
+
+.speck {
+  stroke-width: 0.8;
+  animation-duration: 680ms;
+}
+
+/* ---------- spoiled ---------- */
+
+.stink path {
+  fill: none;
+  stroke: #7d8d2a;
+  stroke-width: 4;
+  stroke-linecap: round;
+  animation: stink 1.8s ease-in-out calc(var(--i) * 0.5s) infinite;
+  opacity: 0;
+}
+
+@keyframes stink {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  40% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+}
+
+.fly {
+  animation: fly 2.2s linear calc(var(--i) * -0.73s) infinite;
+}
+
+.fly:nth-of-type(2) {
+  animation-duration: 1.7s;
+  animation-direction: reverse;
+}
+
+@keyframes fly {
+  0% {
+    transform: translate(210px, 60px) rotate(0) translateX(70px) rotate(0);
+  }
+  100% {
+    transform: translate(210px, 60px) rotate(360deg) translateX(70px) rotate(-360deg);
+  }
+}
+
+.wing {
+  fill: rgb(255 255 255 / 0.8);
+  stroke: #1d1712;
+  stroke-width: 0.8;
+  animation: buzz 60ms linear infinite alternate;
+  transform-box: fill-box;
+  transform-origin: bottom;
+}
+
+@keyframes buzz {
+  to {
+    transform: scaleY(0.4);
+  }
+}
+
+/* ---------- cooked: a stirring ladle and sparkles ---------- */
+
+.ladle {
+  transform-origin: 210px 126px;
+  animation: stir 1.2s ease-in-out 3;
+}
+
+@keyframes stir {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(18deg) translateX(10px);
+  }
+  75% {
+    transform: rotate(-18deg) translateX(-10px);
+  }
+}
+
+.ladle-handle {
+  stroke: var(--brown);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+.ladle-cup {
+  fill: #c9c2b3;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+
+.sparkle,
+.rinse {
+  fill: #fff6c9;
+  stroke: var(--mustard-deep);
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.sparkle {
+  animation: twinkle 1.4s ease-in-out calc(var(--i) * 0.2s) infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    transform: scale(0.3) rotate(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1) rotate(45deg);
+    opacity: 1;
+  }
+}
+
+/* ---------- the strainer and the bowl ---------- */
+
+.strainer-bowl {
+  fill: var(--teal);
+  stroke: var(--ink);
+  stroke-width: 3.5;
+}
+
+.strainer-hole {
+  fill: #183b39;
+}
+
+.strainer-rim {
+  fill: var(--enamel);
+  stroke: var(--ink);
+  stroke-width: 3.5;
+}
+
+.strainer-inside {
+  fill: #1e4a47;
+}
+
+.strainer-handle {
+  stroke: var(--ink);
+  stroke-width: 10;
+  stroke-linecap: round;
+}
+
+.drip {
+  fill: var(--soup);
+  stroke: var(--ink);
+  stroke-width: 1;
+  opacity: 0;
+}
+
+.zone-strainer:has(.floating) .drip {
+  animation: drip 1.3s ease-in calc(var(--i) * 0.4s) infinite;
+}
+
+@keyframes drip {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+}
+
+.bowl-body {
+  fill: #b9793f;
+  stroke: var(--ink);
+  stroke-width: 3.5;
+}
+
+.bowl-grain {
+  fill: none;
+  stroke: #8d5a2c;
+  stroke-width: 2;
+}
+
+.bowl-rim {
+  fill: #d49a5c;
+  stroke: var(--ink);
+  stroke-width: 3.5;
+}
+
+.bowl-inside {
+  fill: #6e4322;
+}
+
+.zone-pulse {
+  position: absolute;
+  inset: 20% 10%;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.zone-pulse[data-on='true'] {
+  animation: pulse 600ms var(--ease-out) forwards;
+}
+
+@keyframes pulse {
+  from {
+    box-shadow: 0 0 0 0 rgb(255 246 227 / 0.9);
+  }
+  to {
+    box-shadow: 0 0 0 40px rgb(255 246 227 / 0);
+  }
+}
+
+/* ---------- what each zone holds: dunked, then bobbing half under ---------- */
+
+.zone-items {
+  position: absolute;
+  pointer-events: none;
+}
+
+.zone-pot .zone-items {
+  left: 22%;
+  right: 22%;
+  top: 22%;
+  height: 22%;
+}
+
+.zone-strainer .zone-items {
+  left: 30%;
+  right: 12%;
+  top: 8%;
+  height: 30%;
+}
+
+.zone-spices .zone-items {
+  left: 18%;
+  right: 18%;
+  top: 4%;
+  height: 34%;
+}
+
+/* sized from the zone's own width (100cqw); the landing uses translate/scale/clip-path and the bob uses transform, so they stack */
+.floating {
+  position: absolute;
+  top: 0;
+  width: calc(var(--item) * 100cqw);
+  left: calc((var(--i) + 0.5) / var(--n) * 100% - var(--item) * 50cqw);
+  clip-path: inset(0 0 30% 0);
+  transition: left 450ms var(--snap);
+  animation:
+    drop-in 620ms var(--snap) both,
+    bob 2.2s ease-in-out calc(var(--i) * -0.6s) infinite;
+}
+
+.zone-pot .floating {
+  clip-path: inset(0 0 26% 0);
+  animation:
+    dunk 860ms cubic-bezier(0.3, 0.9, 0.4, 1) both,
+    bob 2.2s ease-in-out calc(var(--i) * -0.6s) infinite;
+}
+
+/* in: plunge under, come back up, settle with a quarter below the surface */
+@keyframes dunk {
+  0% {
+    translate: 0 -70%;
+    scale: 0.85;
+    clip-path: inset(0 0 0 0);
+  }
+  38% {
+    translate: 0 40%;
+    scale: 1.06 0.92;
+    clip-path: inset(0 0 66% 0);
+  }
+  68% {
+    translate: 0 -12%;
+    scale: 0.97 1.04;
+    clip-path: inset(0 0 14% 0);
+  }
+  100% {
+    translate: 0 0;
+    scale: 1;
+    clip-path: inset(0 0 26% 0);
+  }
+}
+
+@keyframes drop-in {
+  0% {
+    translate: 0 -70%;
+    scale: 0.85;
+    clip-path: inset(0 0 0 0);
+  }
+  55% {
+    translate: 0 12%;
+    scale: 1.08 0.9;
+    clip-path: inset(0 0 42% 0);
+  }
+  100% {
+    translate: 0 0;
+    scale: 1;
+    clip-path: inset(0 0 30% 0);
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-6deg);
+  }
+  50% {
+    transform: translateY(5px) rotate(6deg);
+  }
+}
+
+.station[data-mood='spoiled'] .zone-pot .floating {
+  filter: sepia(0.6) hue-rotate(40deg) saturate(0.7);
+}
+
+/* the value that went in floats up out of the zone */
+.pop {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 6%;
+  padding: 0.12em 0.6em;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  box-shadow: 2px 2px 0 var(--ink);
+  font-family: var(--face-mono);
+  font-weight: 600;
+  font-size: clamp(0.72rem, 5cqw, 1.3rem);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: pop 1.5s var(--snap) both;
+}
+
+.zone-pot .pop {
+  top: 2%;
+  font-size: clamp(0.8rem, 3.8cqw, 1.6rem);
+}
+
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 12px) scale(0.6);
+  }
+  14% {
+    opacity: 1;
+    transform: translate(-50%, -8px) scale(1.1);
+  }
+  24% {
+    transform: translate(-50%, -12px) scale(1);
+  }
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -64px) scale(0.95);
+  }
+}
+
+/* ---------- the dump: bin up, lid open, pot tips and pours, two bangs, back on the flame, lid slams ---------- */
+
+.station {
+  --dump: 2200ms;
+}
+
+.station[data-dumping='true'] .pot-shaker {
+  animation: pour-out var(--dump) cubic-bezier(0.45, 0, 0.3, 1) both;
+}
+
+@keyframes pour-out {
+  0% {
+    transform: none;
+  }
+  7% {
+    transform: translateY(2%) scale(1.03, 0.95);
+  }
+  18% {
+    transform: translate(7%, -7%) rotate(-6deg);
+  }
+  31% {
+    transform: translate(18%, 0) rotate(42deg);
+  }
+  38% {
+    transform: translate(18%, 0) rotate(46deg);
+  }
+  /* two bangs on the rim of the bin */
+  44% {
+    transform: translate(18%, -2%) rotate(37deg);
+  }
+  47% {
+    transform: translate(18%, 0) rotate(47deg);
+  }
+  51% {
+    transform: translate(18%, -2%) rotate(38deg);
+  }
+  54% {
+    transform: translate(18%, 0) rotate(47deg);
+  }
+  64% {
+    transform: translate(7%, -6%) rotate(-5deg);
+  }
+  72% {
+    transform: translateY(1%) scale(1.04, 0.95);
+  }
+  78%,
+  100% {
+    transform: none;
+  }
+}
+
+/* the soup runs out of the pot as it pours */
+.station[data-dumping='true'] .surface {
+  transform-origin: 330px 126px;
+  animation: drain var(--dump) ease-in both;
+}
+
+@keyframes drain {
+  0%,
+  31% {
+    transform: none;
+    opacity: 1;
+  }
+  56% {
+    transform: scale(0.2, 0.4);
+    opacity: 0.6;
+  }
+  60%,
+  100% {
+    transform: scale(0, 0);
+    opacity: 0;
+  }
+}
+
+.station[data-dumping='true'] :is(.bubble, .steam, .splash, .stink) {
+  visibility: hidden;
+}
+
+/* what was in the pot slides to the lip and drops into the bin (the lip ends at 101% across, the bin mouth 63% down) */
+.station[data-dumping='true'] .zone-pot .floating {
+  --lip: calc(79.4cqw - 56cqw * (var(--i) + 0.5) / var(--n));
+  animation: toss var(--dump) linear calc(var(--i) * 50ms) both;
+}
+
+@keyframes toss {
+  0% {
+    translate: 0 0;
+    rotate: 0deg;
+    scale: 1;
+    opacity: 1;
+    clip-path: inset(0 0 26% 0);
+  }
+  18% {
+    translate: 7cqw -6cqw;
+    rotate: -6deg;
+  }
+  30% {
+    translate: calc(var(--lip) * 0.6) -7cqw;
+    rotate: 40deg;
+    clip-path: inset(0 0 0 0);
+  }
+  38% {
+    translate: var(--lip) 3cqw;
+    rotate: 130deg;
+    scale: 0.95;
+  }
+  50% {
+    translate: var(--lip) 25cqw;
+    rotate: 270deg;
+    scale: 0.7;
+    opacity: 1;
+  }
+  54%,
+  100% {
+    translate: var(--lip) 28cqw;
+    rotate: 300deg;
+    scale: 0.4;
+    opacity: 0;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* the strainer and the bowl are emptied too */
+.station[data-dumping='true'] :is(.zone-strainer, .zone-spices) .floating {
+  animation: poof 640ms var(--ease-out) calc(1000ms + var(--i) * 80ms) both;
+}
+
+@keyframes poof {
+  0% {
+    translate: 0 0;
+    scale: 1;
+    opacity: 1;
+  }
+  40% {
+    translate: 0 -40%;
+    scale: 1.1;
+  }
+  100% {
+    translate: 0 -70%;
+    scale: 0.2;
+    opacity: 0;
+  }
+}
+
+/* the flies follow the soup into the bin */
+.station[data-dumping='true'] .flies {
+  transform-origin: 210px 60px;
+  animation: flies-follow var(--dump) ease-in both;
+}
+
+@keyframes flies-follow {
+  0%,
+  30% {
+    translate: 0 0;
+    scale: 1;
+    opacity: 1;
+  }
+  58% {
+    translate: 216px 154px;
+    scale: 0.4;
+    opacity: 1;
+  }
+  62%,
+  100% {
+    translate: 216px 158px;
+    scale: 0.2;
+    opacity: 0;
+  }
+}
+
+/* the bin rises out of the counter, and sinks back after the slam */
+.bin {
+  transform-origin: 426px 434px;
+  animation: bin-rise var(--dump) both;
+}
+
+@keyframes bin-rise {
+  0%,
+  8% {
+    transform: translateY(260px);
+    animation-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1.25);
+  }
+  22%,
+  75% {
+    transform: none;
+  }
+  77% {
+    transform: translateY(4px) scaleY(0.96);
+  }
+  80% {
+    transform: none;
+    animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.4);
+  }
+  94%,
+  100% {
+    transform: translateY(260px);
+  }
+}
+
+.bin-body {
+  fill: var(--avocado);
+  stroke: var(--ink);
+  stroke-width: 3.5;
+  stroke-linejoin: round;
+}
+
+.bin-rib {
+  fill: none;
+  stroke: var(--avocado-deep);
+  stroke-width: 3;
+}
+
+.bin-pedal {
+  fill: #c9c2b3;
+  stroke: var(--ink);
+  stroke-width: 2.5;
+}
+
+.bin-mouth {
+  fill: #1d1712;
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+
+.bin-rim {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 3.5;
+}
+
+/* hinged on the right, so it swings away from the pour */
+.bin-lid {
+  transform-origin: 479px 212px;
+  animation: lid var(--dump) both;
+}
+
+@keyframes lid {
+  0%,
+  20% {
+    transform: none;
+  }
+  26% {
+    transform: rotate(128deg);
+  }
+  30%,
+  72% {
+    transform: rotate(116deg);
+    animation-timing-function: cubic-bezier(0.7, 0, 0.9, 0.5);
+  }
+  76% {
+    transform: rotate(-4deg);
+  }
+  79% {
+    transform: rotate(7deg);
+  }
+  82%,
+  100% {
+    transform: none;
+  }
+}
+
+.bin-lid-dome,
+.bin-lid-rim {
+  fill: var(--enamel);
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+
+.bin-knob {
+  fill: #c9c2b3;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+
+/* a gust of stink escapes as the lid slams */
+.bin-puff circle {
+  fill: #b9c46a;
+  stroke: #56601c;
+  stroke-width: 1.5;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: bin-puff var(--dump) ease-out both;
+}
+
+@keyframes bin-puff {
+  0%,
+  75% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.3);
+  }
+  79% {
+    opacity: 0.9;
+  }
+  92%,
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), -36px) scale(1.5);
+  }
+}
+
+/* the stream: drawn down from the lip, thins, and its tail falls in */
+@property --pour {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+.pour {
+  opacity: 0;
+  animation: pour-show var(--dump) linear both;
+}
+
+@keyframes pour-show {
+  0%,
+  31% {
+    opacity: 0;
+    --pour: 1;
+  }
+  33% {
+    opacity: 1;
+  }
+  54% {
+    --pour: 1;
+  }
+  60% {
+    opacity: 1;
+    --pour: 0.3;
+  }
+  64%,
+  100% {
+    opacity: 0;
+    --pour: 0.3;
+  }
+}
+
+.stream-edge,
+.stream,
+.stream-core {
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 100 100;
+  animation: stream var(--dump) linear both;
+}
+
+.stream-edge {
+  stroke: var(--ink);
+  stroke-width: calc(27px * var(--pour));
+}
+
+.stream {
+  stroke: var(--soup);
+  stroke-width: calc(21px * var(--pour));
+}
+
+.stream-core {
+  stroke: rgb(255 255 255 / 0.35);
+  stroke-width: calc(5px * var(--pour));
+}
+
+@keyframes stream {
+  0%,
+  32% {
+    stroke-dashoffset: 100;
+  }
+  39%,
+  57% {
+    stroke-dashoffset: 0;
+  }
+  64%,
+  100% {
+    stroke-dashoffset: -100;
+  }
+}
+
+.blob {
+  fill: var(--soup);
+  stroke: var(--ink);
+  stroke-width: 1.2;
+  animation: blob 380ms ease-in calc(var(--i) * -76ms) infinite;
+}
+
+@keyframes blob {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(var(--dx), 90px);
+  }
+}
+
+.bin-drop {
+  fill: var(--soup);
+}
+
+.bin-splash circle {
+  animation: arc 420ms linear calc(var(--i) * -84ms) infinite;
+}
+
+.bin-splash {
+  opacity: 0;
+  animation: pour-show var(--dump) linear both;
+}
+
+/* a jolt runs through the kitchen when the lid slams */
+.station[data-dumping='true'] {
+  animation: jolt var(--dump) both;
+}
+
+@keyframes jolt {
+  0%,
+  75% {
+    translate: 0 0;
+  }
+  76.5% {
+    translate: 0 4px;
+  }
+  78% {
+    translate: 0 -2px;
+  }
+  80%,
+  100% {
+    translate: 0 0;
+  }
+}
+
+/* back on the flame: fresh broth rises and the rim glints */
+.soup-wrap[data-fresh='true'] .surface {
+  animation: refill 900ms var(--snap) both;
+}
+
+@keyframes refill {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.rinse {
+  opacity: 0;
+  animation: rinse 900ms var(--ease-out) 250ms both;
+}
+
+@keyframes rinse {
+  0% {
+    opacity: 0;
+    transform: scale(0.2) rotate(0);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.3) rotate(60deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.4) rotate(120deg);
+  }
+}
+
+/* the chef's word */
+.chef {
+  position: absolute;
+  z-index: 5;
+  left: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0.8rem 1rem;
+  border: 2.5px solid var(--ink);
+  border-radius: 14px;
+  background: var(--paper);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.chef-says {
+  flex: 1 1 22rem;
+  margin: 0;
+}
+
+.chef-spoiled {
+  background: #eef0cf;
+  transition:
+    opacity 220ms ease,
+    translate 360ms var(--snap);
+}
+
+/* important: Motion keeps an inline opacity on the box while it is on screen */
+.chef-spoiled[data-dumping='true'] {
+  opacity: 0 !important;
+  translate: 0 28px;
+  pointer-events: none;
+}
+
+/* ---------- the pantry ---------- */
+
+.pantry {
+  grid-area: pantry;
+}
+
+.pantry-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.pantry-head h2 {
+  margin: 0;
+  font-family: var(--face-display);
+  font-weight: 400;
+  font-size: clamp(1.5rem, 1.9vw, 2.3rem);
+}
+
+.pantry-head p {
+  flex: 1 1 18rem;
+  margin: 0;
+  font-size: clamp(0.92rem, 0.4rem + 0.5vw, 1.15rem);
+  color: var(--ink-soft);
+}
+
+/* the chef leans over the counter and says what comes next */
+.pantry-head .pantry-tip {
+  flex: 0 1 auto;
+  padding: 0.35rem 0.8rem;
+  border: 2px solid var(--ink);
+  border-radius: 12px 12px 12px 3px;
+  background: var(--paper);
+  box-shadow: 3px 3px 0 var(--ink);
+  color: var(--ink);
+}
+
+.pantry-head .pantry-tip + * {
+  margin-left: auto;
+}
+
+/* wooden shelf */
+.shelf {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  gap: 1rem 0.9rem;
+  margin-top: 0.9rem;
+  padding: 1rem 1rem 1.4rem;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  background:
+    repeating-linear-gradient(90deg, rgb(58 36 24 / 0.06) 0 2px, transparent 2px 38px),
+    linear-gradient(#c98f55, #b47a43);
+  box-shadow: inset 0 -10px 0 #8d5a2c, 6px 7px 0 var(--ink);
+}
+
+.card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.1rem;
+  padding: 0.75em 0.6em 0.7em;
+  border: 2.5px solid var(--ink);
+  border-radius: 12px;
+  background: var(--paper);
+  box-shadow: 3px 4px 0 var(--ink);
+  font-size: clamp(0.8rem, 0.35rem + 0.5vw, 1.15rem);
+  cursor: grab;
+  touch-action: none;
+  animation: shelf-in 520ms var(--snap) calc(var(--i) * 45ms + 150ms) both;
+}
+
+@keyframes shelf-in {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.92);
+  }
+}
+
+/* tapped, not dragged: let a swipe over the shelf scroll the page */
+.card[data-touch='true'] {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.card.is-spice {
+  background: #fdf0c7;
+}
+
+.card img {
+  width: var(--card-img);
+  height: var(--card-img);
+  object-fit: contain;
+  pointer-events: none;
+  transition: transform 200ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:not(:disabled):hover img {
+    transform: translateY(-5px) rotate(-6deg) scale(1.06);
+  }
+}
+
+.card[data-selected='true'] {
+  outline: 3px solid var(--tomato);
+  outline-offset: 3px;
+}
+
+.card[data-selected='true'] img {
+  animation: wiggle 500ms ease-in-out infinite;
+}
+
+@keyframes wiggle {
+  25% {
+    transform: rotate(-8deg);
+  }
+  75% {
+    transform: rotate(8deg);
+  }
+}
+
+/* the chef's pick shivers on the shelf */
+.card[data-hinted='true'] {
+  outline: 3px dashed var(--mustard);
+  outline-offset: 3px;
+}
+
+.card[data-hinted='true'] img {
+  animation: wiggle 700ms ease-in-out infinite;
+}
+
+.card:disabled {
+  cursor: default;
+  filter: grayscale(0.4);
+  opacity: 0.75;
+}
+
+.card-name {
+  font-weight: 800;
+  font-size: 1.05em;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.card-food {
+  font-size: 0.8em;
+  color: var(--ink-soft);
+}
+
+.card-value {
+  margin-top: 0.2rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--face-mono);
+  font-size: 0.86em;
+}
+
+.flying {
+  position: fixed;
+  z-index: 80;
+  left: 0;
+  top: 0;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(3px 5px 0 rgb(58 36 24 / 0.3));
+}
+
+/* the motion trail behind a thrown food */
+.flying.ghost {
+  z-index: 79;
+  filter: none;
+}
+
+/* ---------- served: the recipe card ---------- */
+
+.served {
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(58 36 24 / 0.35);
+  backdrop-filter: blur(3px);
+}
+
+.recipe-card {
+  width: min(560px, 100%);
+  max-height: calc(100svh - 2rem);
+  overflow: auto;
+  padding: 1.6rem 1.6rem 1.4rem;
+  border: 3px solid var(--ink);
+  border-radius: 10px;
+  /* an index card: ruled lines, and a red rule under the heading however many lines it takes */
+  background:
+    repeating-linear-gradient(transparent 0 1.6rem, rgb(46 111 107 / 0.16) 1.6rem calc(1.6rem + 1px)),
+    var(--paper);
+  box-shadow: 8px 9px 0 var(--ink);
+}
+
+.recipe-head {
+  margin: -1.6rem -1.6rem 0;
+  padding: 1.6rem 1.6rem 0.7rem;
+  border-bottom: 3px solid var(--tomato);
+  background: var(--paper);
+}
+
+.recipe-kicker {
+  margin: 0;
+  font-family: var(--face-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--avocado-deep);
+}
+
+.recipe-title {
+  margin: 0.2rem 0 0;
+  font-family: var(--face-display);
+  font-weight: 400;
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  line-height: 1.05;
+  color: var(--tomato);
+}
+
+.recipe-stars {
+  display: flex;
+  gap: 0.2rem;
+  margin: 0.8rem 0 0;
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.recipe-stars span {
+  display: inline-block;
+}
+
+.recipe-formula {
+  margin: 1rem 0 0;
+  padding: 0.6rem 0.8rem;
+  border: 2px dashed var(--ink-soft);
+  border-radius: 8px;
+  font-family: var(--face-mono);
+  font-size: 0.85rem;
+}
+
+.recipe-def {
+  margin: 0.9rem 0 0;
+  font-weight: 600;
+}
+
+.recipe-note {
+  margin: 0.6rem 0 0;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+.recipe-source {
+  margin: 0.8rem 0 0;
+  font-size: 0.9rem;
+}
+
+.recipe-actions {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin-top: 1.3rem;
+}
+
+/* ======================================================= reduced motion: no loops, no travel; colour still changes */
+
+@media (prefers-reduced-motion: reduce) {
+  .sunburst,
+  .drift img,
+  .ribbon,
+  .flame,
+  .spark,
+  .burner-glow,
+  .pan-glow,
+  .bubble,
+  .steam path,
+  .stink path,
+  .fly,
+  .wing,
+  .floating,
+  .ladle,
+  .sparkle,
+  .drip,
+  .zone[data-armed='true'] .zone-label,
+  .card[data-selected='true'] img,
+  .card[data-hinted='true'] img {
+    animation: none !important;
+  }
+
+  .ticket,
+  .card,
+  .pop {
+    animation: none !important;
+  }
+
+  .splash,
+  .drip-burst,
+  .sprinkle-burst,
+  .sparks {
+    display: none;
+  }
+
+  .steam path,
+  .stink path {
+    opacity: 0.6;
+  }
+}
+
+/* ======================================================= phones: the stove stays on screen above the pantry */
+
+@media (max-width: 860px) {
+  .kitchen-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'ticket'
+      'stove'
+      'pantry';
+  }
+
+  /* the stove sticks while the pantry scrolls under it; a band of page colour hides what slides past above */
+  .stove {
+    position: sticky;
+    top: 0.5rem;
+    z-index: 20;
+    min-height: 0;
+    /* headroom for the pot when it tips over the bin */
+    padding: 2rem 0.35rem 0.5rem;
+    box-shadow:
+      6px 7px 0 var(--ink),
+      0 -0.6rem 0 0.2rem var(--cream);
+  }
+
+  /* labels shrink with the stove so "Seasoning" still fits a third of a phone */
+  .station {
+    --name-size: min(0.85rem, 4.1cqi);
+    --hint-size: min(0.5rem, 2.8cqi);
+    --label-pad-y: 0.22rem;
+    --pot-w: calc((var(--station-w) - 0.8rem) * 1.3 / 3.3);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: 0.4rem;
+  }
+
+  .zone-label {
+    padding-inline: 0.4rem;
+    border-radius: 8px;
+  }
+
+  .hint-long {
+    display: none;
+  }
+
+  .hint-short {
+    display: inline;
+  }
+
+  /* the order's name rides along on the sticky stove */
+  .stove-order {
+    display: block;
+  }
+
+  .sound-toggle {
+    top: 1rem;
+    right: var(--gutter);
+  }
+
+  /* chip and stars share a row (sound takes the corner); where we are goes underneath */
+  .kitchen-bar {
+    justify-content: flex-start;
+    gap: 0.4rem 1rem;
+    padding-right: 0;
+  }
+
+  .kitchen-where {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .zone-strainer .zone-target {
+    margin-bottom: 2rem;
+  }
+
+  .zone-spices .zone-target {
+    margin-bottom: 0.8rem;
+  }
+
+  .zone-strainer,
+  .zone-spices {
+    --item: 0.16;
+  }
+
+  /* under the pot, not over it; spoiled labels duck away, so the chef takes their place */
+  .chef {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    margin-top: 0.6rem;
+  }
+
+  .chef-spoiled {
+    margin-top: -2.1rem;
+  }
+
+  /* on a phone the chef's box is part of the sticky stove; it stays put so nothing jumps */
+  .chef-spoiled[data-dumping='true'] {
+    opacity: 1 !important;
+    translate: none;
+  }
+
+  .shelf {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.7rem;
+    padding: 0.8rem;
+  }
+
+  .card img {
+    width: 58px;
+    height: 58px;
+  }
+
+  .howto ol {
+    grid-template-columns: 1fr;
+  }
+
+  .drift img:nth-child(n + 5) {
+    display: none;
+  }
+
+  /* on a phone the foods keep to the corners, clear of the words */
+  .drift img {
+    width: 52px;
+  }
+
+  .drift img:nth-child(1) { left: 5%; top: 1.1rem; }
+  .drift img:nth-child(2) { left: 7%; top: auto; bottom: 0.7rem; }
+  .drift img:nth-child(3) { right: 32%; top: 0.5rem; }
+  .drift img:nth-child(4) { right: 7%; top: auto; bottom: 0.7rem; }
+
+  .book-hero {
+    padding-bottom: 5rem;
+  }
+
+  .ticket {
+    transform: none;
+  }
+}
+
+/* ======================================================= desktop: the kitchen fills the window */
+
+@media (min-width: 861px) {
+  .kitchen {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 100svh;
+    padding: clamp(0.6rem, 1.4svh, 1.1rem) clamp(1rem, 1.8vw, 2.4rem) clamp(0.9rem, 2svh, 1.6rem);
+  }
+
+  .kitchen-grid {
+    grid-template-columns: clamp(250px, 21vw, 420px) minmax(0, 1fr);
+    grid-template-rows: minmax(min-content, 1fr) auto;
+    gap: clamp(0.9rem, 1.5vw, 1.8rem);
+    margin-top: clamp(0.5rem, 1.2svh, 1rem);
+  }
+
+  /* the stove takes whatever height is left, and the station grows to fill it:
+     as wide as the stove, or as wide as its height allows (0.36 of the width is pot and label; 7rem is room for the steam) */
+  .stove {
+    container-type: size;
+  }
+
+  .station {
+    --station-w: max(300px, min(100cqw, calc((100cqh - 7rem) / 0.36)));
+  }
+
+  .shelf {
+    padding: clamp(0.8rem, 1vw, 1.3rem) clamp(0.8rem, 1vw, 1.3rem) clamp(1.1rem, 1.4vw, 1.7rem);
+    gap: clamp(0.7rem, 0.9vw, 1.2rem);
+  }
+}
+
+/* wide enough for the whole pantry on one shelf */
+@media (min-width: 1100px) {
+  /* one row, cards no wider than 240px, so a short pantry does not stretch */
+  .shelf {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 240px);
+    justify-content: center;
+  }
+}
+
+/* short screens: a tighter ticket and shelf, so the kitchen still fits without scrolling */
+@media (min-width: 861px) and (max-height: 820px) {
+  .ticket {
+    padding: 1.5em 1.3em 1.3em;
+  }
+
+  .ticket-abbr {
+    margin-top: 0.4rem;
+    font-size: 3em;
+  }
+
+  .ticket-rule {
+    margin: 0.6rem 0;
+  }
+
+  .ticket-lines {
+    gap: 0.4rem;
+  }
+
+  .ticket-total {
+    min-height: 2.6em;
+  }
+
+  .shelf {
+    margin-top: 0.6rem;
+  }
+
+  .card {
+    padding: 0.5em 0.5em 0.5em;
+  }
+}

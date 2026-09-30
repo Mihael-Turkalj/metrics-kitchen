@@ -1,5 +1,7 @@
 # The Metrics Kitchen
 
+![Cooking CPM: cost into the pot, impressions through the strainer, the apple into the seasoning, then the recipe card](media/preview.webp)
+
 A cooking game for ad metrics. Every Meta Ads and Google Ads metric is a recipe, and you cook it from its ingredients: cost goes in the pot, impressions go through the strainer, an apple adds ×1,000, and out comes CPM. Put something in the wrong place and the soup spoils.
 
 **Live site:** https://mihael-turkalj.github.io/metrics-kitchen/
@@ -50,6 +52,9 @@ Six word problems from real ad work, cooked in the same kitchen. The ticket carr
   - The strainer wobbles and sheds a shower through its holes; the seasoning bowl bounces and throws up a pinch.
 - **The fire:** a cast-iron burner with pan supports and two rows of gas flames, blue at the base and amber at the tips, one row behind the pot and one in front. It throws a warm glow on the pot's underside and sparks rise at the sides. It grows with every ingredient, leans up when you hover a food over the pot, roars gold when the dish is cooked, and coughs and sputters when it's spoiled.
 - **Spoiled:** the pot rattles, the soup goes green, stink lines rise and three flies circle.
+
+  ![A wrong ingredient spoils the soup; the pot is dumped into a pedal bin and refilled](media/dump.webp)
+
 - **The dump (2.2 s):**
   1. A 1970s avocado pedal bin rises out of the counter and its lid swings open.
   2. The pot lifts off the flame and tips about its lip. A stream of green soup pours into the bin, the ingredients tumble in after it, and the flies follow.

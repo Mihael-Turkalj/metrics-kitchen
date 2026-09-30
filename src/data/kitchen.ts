@@ -63,6 +63,8 @@ export const foods: Record<string, { food: string; color: string }> = {
 }
 
 export const art = (id: string) => `${import.meta.env.BASE_URL}art/${id}.webp`
+/** A 256px copy, for places where the food is shown small (the book's cover and how-to). */
+export const artSmall = (id: string) => `${import.meta.env.BASE_URL}art/sm/${id}.webp`
 export const ingredientName = (id: string) => ingredients.find((i) => i.id === id)?.name ?? spices.find((s) => s.id === id)?.label ?? id
 export const isSpice = (id: string) => spices.some((s) => s.id === id)
 export const recipeById = (id: string) => recipes.find((r) => r.id === id)
